@@ -1,0 +1,32 @@
+nExperiments        10
+
+
+steps
+nTrainSteps                 30000
+trainStorePer               3000
+nTestSteps                  15000
+testStorePer                15000
+nTrainEpisodes              0
+nTestEpisodes               0
+nMaxStepsPerTrainEpisode    0
+nMaxStepsPerTestEpisode     0
+
+algorithm
+algorithms          Q Sarsa QV Acla Cacla
+tau                 0.001 0.01 0.1 1.0 10.0
+epsilon             0.001 0.01 0.1 1.0
+sigma               0.01 0.1 1.0 10.0
+
+learningRates
+decreaseType        none
+nLearningRates      3
+learningRate        0.0001 0.001 0.01 0.1
+learningRate        0.0    0.001 0.01 0.1
+learningRate        0.0    0.001 0.01 0.1
+
+discount
+gamma               0.99
+
+nn
+nHiddenQ            20
+nHiddenV            20
