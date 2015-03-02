@@ -86,7 +86,8 @@ void cNeuralNetwork::init( int nLayersInit, int * layerSizeInit, int * layerFunc
     }
     
     // Initialise the weights randomly between -0.3 and 0.3
-    randomizeWeights( -0.3, 0.3 ) ;
+    // randomizeWeights( -0.3, 0.3 ) ;
+    randomizeWeights( -0.03, 0.03 ) ;
     recentlyUpdated = true ;
 }
 

@@ -11,13 +11,20 @@ ARMWORLD = Arm.cpp
 ARMINTERFACE = ArmInterface.cpp
 
 LDFLAGS = -L/usr/lib -L/usr/lib/gcc/x86_64-linux-gnu/4.8 -lstdc++
-# ROS_LDFLAGS = -L/opt/ros/indigo/lib -lroscpp -lrosconsole -lroscpp_serialization -lroslib -lrostime
-ROS_LDFLAGS = -L/home/src/ros/hydro/catkin_ws/install_isolated/lib -lroscpp -lrosconsole -lroscpp_serialization -lroslib -lrostime
+# ROS_DEFS = -DUSE_ROS
+ROS_LDFLAGS = -L/opt/ros/indigo/lib -lroscpp -lrosconsole -lroscpp_serialization -lroslib -lrostime
+# ROS_LDFLAGS = -L/home/src/ros/hydro/catkin_ws/install_isolated/lib -lroscpp -lrosconsole -lroscpp_serialization -lroslib -lrostime
 
 
 # objects := $(patsubst %.cpp,%.o,$(wildcard *.cpp))
 objects := $(patsubst %.cpp,%.o,$(UTILFILES))
 objects += $(patsubst %.cpp,%.o,$(ALGORITHMS))
+
+cp_objs = $(patsubst %.cpp,%.o,$(CPWORLD))
+cp_objs += $(patsubst %.cpp,%.o,$(CPINTERFACE))
+
+cp_objs_inc = $(patsubst %.cpp,%.h,$(CPWORLD))
+cp_objs_inc += $(patsubst %.cpp,%.h,$(CPINTERFACE))
 
 arm_objs = $(patsubst %.cpp,%.o,$(ARMWORLD))
 arm_objs += $(patsubst %.cpp,%.o,$(ARMINTERFACE))
@@ -36,6 +43,16 @@ cp:
 	@echo where \'cfg\' is a configuration file.
 	@echo
 
+cp_objs: $(cp_objs_inc)
+cp_ros: $(objects) $(cp_objs)
+# c++ $(CFLAGS) $(UTILFILES) $(ALGORITHMS) $(CPWORLD) $(CPINTERFACE) -o CartPole
+	g++ $(objects) $(cp_objs) -o CartPoleRos $(LDFLAGS) $(ROS_LDFLAGS)
+	@echo
+	@echo Done compiling CartPoleRos.
+	@echo Run with:    ./CartPoleRos \'cfg\'
+	@echo where \'cfg\' is a configuration file.
+	@echo
+
 #		small
 small:
 	c++ $(CFLAGS) $(UTILFILES) $(ALGORITHMS) $(SMALLWORLD) $(SMALLINTERFACE) -o SmallMaze
@@ -45,7 +62,7 @@ small:
 	@echo where \'cfg\' is a configuration file.
 	@echo
 
-arm_objs: arm_objs_inc
+arm_objs: $(arm_objs_inc)
 
 arm: $(objects) $(arm_objs)
 # c++ $(CFLAGS) $(ARM_LDFLAGS) $(UTILFILES) $(ALGORITHMS) $(ARMWORLD) $(ARMINTERFACE) -o Arm
@@ -60,6 +77,7 @@ arm: $(objects) $(arm_objs)
 # 	ld -o foo $(ARM_LDFLAGS) $(objects)
 
 clean:
+	rm -rf Arm CartPole CartPoleRos SmallMaze
 	rm -rf *.o
 	rm -f *.out
 	@echo done removing

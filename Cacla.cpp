@@ -203,6 +203,7 @@ void Cacla::update( State * state, Action * action, double rt, State * nextState
 
     double * at = action->continuousAction ;
 
+    // cout << "Cacla.cpp:learningRate[0] = " << learningRate[0] << ", [1] = " << learningRate[1] << endl;
     if ( state->discrete ) {
 
         int st      = state->discreteState ;

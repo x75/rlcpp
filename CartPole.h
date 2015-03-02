@@ -3,6 +3,8 @@
 # include "State.h"
 # include "StateActionUtils.h"
 # include "World.h"
+#include <std_msgs/Float32MultiArray.h>
+#include <ros/ros.h>
 
 class CartPole : public World {
     public:
@@ -37,6 +39,10 @@ class CartPole : public World {
         double Mc, mp, l, t, g;
         double totalM, ml, NORMANGLE;
         bool eoe ;
+	ros::Rate *loop_rate;
+	ros::Publisher pub_motor;
+	ros::Publisher pub_sensor1;
+	ros::Publisher pub_sensor2;
 };
 
 #endif // CARTPOLE_H

@@ -1,16 +1,16 @@
 #ifndef ARM
 #define ARM
+# include <ctime>
+# include <cstdlib>
+# include <iostream>
+# include <math.h>
+# include "Arm.h"
 #include <ros/ros.h>
 #include "std_msgs/MultiArrayLayout.h"
 #include "std_msgs/MultiArrayDimension.h"
 #include <std_msgs/Float64MultiArray.h>
 #include <std_msgs/Float32MultiArray.h>
 #include <std_msgs/Int32.h>
-# include <ctime>
-# include <cstdlib>
-# include <iostream>
-# include <math.h>
-# include "Arm.h"
 
 using namespace std;
 
@@ -28,15 +28,18 @@ Arm::Arm() {
     actionDimension = 3;
     numberOfActions = 21;
 
+    cnt = 0;
+
     char * p=0;
     int argc=0;
     ros::init(argc, &p, getName());
 
     ros::NodeHandle n;
-    pub_reset = n.advertise<std_msgs::Int32>("/arm/reset", 1);
-    //pub_target = n.advertise<std_msgs::Float32MultiArray>("/arm/target", 1);
-    pub_motor = n.advertise<std_msgs::Float64MultiArray>("/arm/motors", 1);
-    sub_sensor  = n.subscribe("/arm/sensors", 1, &Arm::sensorCallback, this);
+    pub_reset = n.advertise<std_msgs::Int32>("/robot/0/reset", 1);
+    pub_target = n.advertise<std_msgs::Float32MultiArray>("/robot/0/target", 1);
+    pub_motor = n.advertise<std_msgs::Float32MultiArray>("/robot/0/motors", 1);
+    pub_reward = n.advertise<std_msgs::Float32MultiArray>("/robot/0/perf", 1);
+    sub_sensor  = n.subscribe("/robot/0/sensors", 1, &Arm::sensorCallback, this);
     sensorValues = (sensor*)malloc(sizeof(sensor)*actionDimension);
     memset(sensorValues,0,sizeof(double)*actionDimension);
     // ros::R
@@ -60,6 +63,10 @@ Arm::Arm() {
     // maxDX = 2.4;
     t = 0.;
 
+    // target
+    tx = 0.;
+    ty = 0.;
+
     // l0 = 0.69230769;
     // l1 = 0.23076923;
     // l2 = 0.07692308;
@@ -70,7 +77,7 @@ Arm::Arm() {
 Arm::~Arm() {
 }
 
-void Arm::sensorCallback(const std_msgs::Float64MultiArray::ConstPtr& sensormsg) {
+void Arm::sensorCallback(const std_msgs::Float32MultiArray::ConstPtr& sensormsg) {
   // std::cerr << "got something: [" << sensormsg->data[0] << ", " << sensormsg->data[1] << "]" << std::endl;
   // std::cerr << "data size: " << sensormsg->data.size() << ", " << stateDimension << std::endl;
   int len=std::min((int)sensormsg->data.size(), stateDimension);
@@ -78,31 +85,43 @@ void Arm::sensorCallback(const std_msgs::Float64MultiArray::ConstPtr& sensormsg)
     sensorValues[k] = sensormsg->data[k];
     // std::cout << "sensors: " << sensorValues[k] << std::endl;
   }
+  // error is the input
+  sensorValues[0] -= tx;
+  sensorValues[1] -= ty;
   gotsensor = true;
   // cout << "gotsensor? cb " << gotsensor << endl;
 }
 
-void Arm::reset() {
+void Arm::settarget() {
     double rnd = ((double) rand()/RAND_MAX);
+    double phi = rnd * 0.5 * M_PI;
+    double r = 0.8 + rnd * 0.2;
+    tx = r * cos(phi);
+    ty = r * sin(phi);
+    cout << "rnd = " << rnd << ", phi = " << phi << ", r = " << r << ", tx " << tx << ", ty = " << ty << endl;
+
+    std_msgs::Float32MultiArray msg_target;
+    msg_target.data.clear();
+    msg_target.data.push_back(tx);
+    msg_target.data.push_back(ty);
+    msg_target.data.push_back(0.);
+    pub_target.publish(msg_target);
+}
+
+void Arm::reset() {
     std_msgs::Int32 msg;
     msg.data = 23;
     pub_reset.publish(msg);
 
-    // std_msgs::Float32MultiArray msg_target;
-    // double phi = rnd * 2 * M_PI;
-    // double r = 0.8 + rnd * 0.2;
-    // tx = r * cos(phi);
-    // ty = r * sin(phi);
-    // msg_target.data.push_back(tx);
-    // msg_target.data.push_back(ty);
-    // pub_target.publish(msg_target);
-
+    settarget();
+    // cout << "tx " << tx << ", ty = " << ty << endl;
+    cnt = 0;
     // motor
     eoe     = true ;
 }
 
 void Arm::step( double h, double *force ) {
-  std_msgs::Float64MultiArray msg;
+  std_msgs::Float32MultiArray msg;
   //   msg.layout.dim_length = 1;
   msg.data.clear();
   for(int k=0;k<actionDimension;k++){
@@ -120,24 +139,38 @@ void Arm::step( double h, double *force ) {
   // loop_rate->sleep();
   // }
   // spin once so to harvest incoming data
+  // cout << "step" << endl;
 }
 
 double Arm::reward() {
+    std_msgs::Float32MultiArray msg_reward;
     double reward = 1.0;
-    double tx = 1.;
-    double ty = 0.;
+    double err = 0., xerr = 0, yerr = 0;
+    // double tx = 1.;
+    // double ty = 0.;
+
+    xerr = fabs(sensorValues[0] - tx);
+    yerr = fabs(sensorValues[1] - ty);
+    err = sqrt(pow(xerr + yerr, 2));
     // cout << "sensors: " << sensorValues[0] << ", " << sensorValues[1] << endl;
     // cout << "errx " << fabs(sensorValues[0] - tx) <<  ", " << "erry " << fabs(sensorValues[1] - ty) << endl;
-    if (fabs(sensorValues[0] - tx) < 0.3 && fabs(sensorValues[1] - ty) < 0.3) {
-	reward = 1.0;
-    }
-    else {
-      reward = -1.;
-    }
-    if (reward > 0) {
-      // cout << "reward = " << reward << endl;
-      cout << reward << flush;
-    }
+    // if (err < 0.2) {
+    // 	reward = 1.0;
+    // }
+    // else {
+    //   reward = -1.;
+    // }
+    // if (reward > 0) {
+    //   // cout << "reward = " << reward << endl;
+    //   cout << reward << flush;
+    // }
+    reward = -err;
+
+    msg_reward.data.clear();
+    msg_reward.data.push_back(reward);
+    pub_reward.publish(msg_reward);
+
+    // cout << "reward" << endl;
     return reward;
 }
 
@@ -157,6 +190,17 @@ void Arm::update(double deltaTime, double *force) {
     // // loop_rate->sleep();
   }
   // cout << "gotsensor? post" << gotsensor << endl;
+  std_msgs::Float32MultiArray msg_target;
+  msg_target.data.clear();
+  msg_target.data.push_back(tx);
+  msg_target.data.push_back(ty);
+  msg_target.data.push_back(0.);
+  pub_target.publish(msg_target);
+  cnt++;
+
+  if (cnt % 500 == 0)
+    settarget();
+  // cout << "update" << endl;
 }
 
 double Arm::act( Action * action ) {
@@ -193,7 +237,15 @@ double Arm::act( Action * action ) {
 
     // return act( force ) ;
     update(t, action->continuousAction);
+    // cout << "act" << endl;
     double r = reward();
+
+    // if (r <= -1.5) {
+    //   reset();
+    // }
+    // else {
+    //   eoe = false;
+    // }
     return r;
 }
 
@@ -222,6 +274,7 @@ void Arm::getState( State * state ) {
   // state->continuousState[2] = 0.;
   // state->continuousState[3] = 0.;
   }
+  // cout << "getState" << endl;
 
 }
 

@@ -307,7 +307,10 @@ void Experiment::getParametersAndRunExperiments( World * world ) {
 
             cout << "Final test results:  " << results[ nTestResults - 1 ] << endl ;
             delete [] results ;
-	    if (!ros::ok()) exit(1);
+	    if (!ros::ok()) {
+	      cout << "ROS failed, exiting" << endl;
+	      exit(1);
+	    }
         }
 
         delete [] learningRate;

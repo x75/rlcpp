@@ -4,6 +4,7 @@
 # include "StateActionUtils.h"
 # include "World.h"
 #include <std_msgs/Float64MultiArray.h>
+#include <std_msgs/Float32MultiArray.h>
 #include <ros/ros.h>
 
 typedef float motor;
@@ -30,7 +31,8 @@ class Arm : public World {
 
         const char * getName() ;
 	// ros
-	void sensorCallback(const std_msgs::Float64MultiArray::ConstPtr& motormsg);
+	void settarget();
+	void sensorCallback(const std_msgs::Float32MultiArray::ConstPtr& motormsg);
 
     private:
         double act( double ) ;
@@ -50,11 +52,13 @@ class Arm : public World {
 	// ros
 	// int number_sensors;
 	// int number_motors;
+	int cnt;
 	bool gotsensor;
 	ros::Publisher pub_reset;
 	ros::Publisher pub_motor;
 	ros::Subscriber sub_sensor;
-        // ros::Publisher pub_t;
+	ros::Publisher pub_target;
+	ros::Publisher pub_reward;
 	// ros::Rate *loop_rate;
 	motor* motorValues;
 	sensor* sensorValues;

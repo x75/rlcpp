@@ -62,7 +62,8 @@ int main( int argn, char *argv[] ) {
 
   delete arm ;
   delete interface ;
-  pause();
+cout << "ending" << endl;
+//pause();
 }
 
 # endif //ARMINTERFACE

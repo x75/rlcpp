@@ -5,6 +5,12 @@
 # include <iostream>
 # include <math.h>
 # include "CartPole.h"
+#include <ros/ros.h>
+#include "std_msgs/MultiArrayLayout.h"
+#include "std_msgs/MultiArrayDimension.h"
+#include <std_msgs/Float64MultiArray.h>
+#include <std_msgs/Float32MultiArray.h>
+#include <std_msgs/Int32.h>
 
 using namespace std;
 
@@ -36,6 +42,30 @@ CartPole::CartPole() {
     maxDPhi = M_PI / 15.0;
     maxDX = 2.4;
 
+    char * p=0;
+    int argc=0;
+    ros::init(argc, &p, getName());
+
+    ros::NodeHandle n;
+    // pub_reset = n.advertise<std_msgs::Int32>("/arm/reset", 1);
+    //pub_target = n.advertise<std_msgs::Float32MultiArray>("/arm/target", 1);
+    pub_motor = n.advertise<std_msgs::Float32MultiArray>("/robot/0/motors", 1);
+    pub_sensor1  = n.advertise<std_msgs::Float32MultiArray>("/robot/0/pos", 1);
+    pub_sensor2  = n.advertise<std_msgs::Float32MultiArray>("/robot/1/pos", 1);
+    usleep(1000000);
+    loop_rate = new ros::Rate(1000);
+
+    // msg.layout.dim = (std_msgs::MultiArrayDimension *)
+    //   malloc(sizeof(std_msgs::MultiArrayDimension) * 1);
+    // msg.layout.dim[0].label = "msg";
+    // msg.layout.dim[0].size = 4;
+    // msg.layout.dim[0].stride = 1*4;
+    // msg.layout.dim_length = 1;
+    // msg.layout.data_offset = 0;
+
+    // msg.data = (float *)malloc(sizeof(float)*3);
+    // msg.data_length = 3;
+
     reset() ;
 }
 
@@ -54,21 +84,51 @@ void CartPole::reset() {
 }
 
 void CartPole::step( double h, double force ) {
-    double cos_phi = cos( phi );
-    double sin_phi = sin( phi );
-    double dphi_sq = dphi*dphi;
-    double cos_phi_sq = cos_phi*cos_phi;
+  std_msgs::Float32MultiArray msg;
+  double cos_phi = cos( phi );
+  double sin_phi = sin( phi );
+  double dphi_sq = dphi*dphi;
+  double cos_phi_sq = cos_phi*cos_phi;
 
-    double ddphi = force*cos_phi - totalM*g*sin_phi + ml*(cos_phi*sin_phi)*dphi*dphi ;
-    ddphi /= ml*cos_phi*cos_phi - totalM*l ;
+  double ddphi = force*cos_phi - totalM*g*sin_phi + ml*(cos_phi*sin_phi)*dphi*dphi ;
+  ddphi /= ml*cos_phi*cos_phi - totalM*l ;
 
-    double ddx = force + ml*sin_phi*dphi_sq - mp*g*cos_phi*sin_phi ;
-    ddx /= totalM - mp*cos_phi_sq ;
+  double ddx = force + ml*sin_phi*dphi_sq - mp*g*cos_phi*sin_phi ;
+  ddx /= totalM - mp*cos_phi_sq ;
 
-    phi     += h*dphi;
-    dphi    += h*ddphi;
-    x       += h*dx;
-    dx      += h*ddx;
+  phi     += h*dphi;
+  dphi    += h*ddphi;
+  x       += h*dx;
+  dx      += h*ddx;
+
+  cos_phi = cos( phi );
+  sin_phi = sin( phi );
+
+  // do ros pubishing
+  // motors / action
+  msg.data.clear();
+  for(int k=0;k<actionDimension;k++){
+    msg.data.push_back(force);
+    // cout << "msg.data " << k << ", " << msg.data[k] << endl;
+  }
+  pub_motor.publish(msg);
+  // sensors / pos
+  // cart
+  msg.data.clear();
+  msg.data.push_back(x);
+  msg.data.push_back(0.);
+  msg.data.push_back(0.);
+  // cout << "msg.data " << k << ", " << msg.data[k] << endl;
+  pub_sensor1.publish(msg);
+
+  // pole
+  msg.data.clear();
+  msg.data.push_back(sin_phi);
+  msg.data.push_back(cos_phi);
+  msg.data.push_back(0.);
+  // cout << "msg.data " << k << ", " << msg.data[k] << endl;
+  pub_sensor2.publish(msg);
+
 }
 
 double CartPole::reward() {
@@ -92,6 +152,7 @@ void CartPole::update(double deltaTime, double force) {
     for( int i = 0 ; i < n ; i++ ) {
         step(h, force);
     }
+    loop_rate->sleep();
 }
 
 double CartPole::act( Action * action ) {
