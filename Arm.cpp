@@ -4,6 +4,8 @@
 #include "std_msgs/MultiArrayLayout.h"
 #include "std_msgs/MultiArrayDimension.h"
 #include <std_msgs/Float64MultiArray.h>
+#include <std_msgs/Float32MultiArray.h>
+#include <std_msgs/Int32.h>
 # include <ctime>
 # include <cstdlib>
 # include <iostream>
@@ -29,13 +31,16 @@ Arm::Arm() {
     char * p=0;
     int argc=0;
     ros::init(argc, &p, getName());
-    
+
     ros::NodeHandle n;
-    motor_pub = n.advertise<std_msgs::Float64MultiArray>("/motors", 1);
-    sensor_sub  = n.subscribe("/sensors", 1, &Arm::sensorCallback, this);
+    pub_reset = n.advertise<std_msgs::Int32>("/arm/reset", 1);
+    //pub_target = n.advertise<std_msgs::Float32MultiArray>("/arm/target", 1);
+    pub_motor = n.advertise<std_msgs::Float64MultiArray>("/arm/motors", 1);
+    sub_sensor  = n.subscribe("/arm/sensors", 1, &Arm::sensorCallback, this);
     sensorValues = (sensor*)malloc(sizeof(sensor)*actionDimension);
     memset(sensorValues,0,sizeof(double)*actionDimension);
     // ros::R
+    usleep(1000000);
     // loop_rate = new ros::Rate(10);
     
     gotsensor = false;
@@ -55,9 +60,9 @@ Arm::Arm() {
     // maxDX = 2.4;
     t = 0.;
 
-    l0 = 0.69230769;
-    l1 = 0.23076923;
-    l2 = 0.07692308;
+    // l0 = 0.69230769;
+    // l1 = 0.23076923;
+    // l2 = 0.07692308;
 
     reset() ;
 }
@@ -79,11 +84,20 @@ void Arm::sensorCallback(const std_msgs::Float64MultiArray::ConstPtr& sensormsg)
 
 void Arm::reset() {
     double rnd = ((double) rand()/RAND_MAX);
+    std_msgs::Int32 msg;
+    msg.data = 23;
+    pub_reset.publish(msg);
 
-    theta0 = 0.1 * rnd - 0.05;
-    theta1 = 0.;
-    theta2 = 0.;
+    // std_msgs::Float32MultiArray msg_target;
+    // double phi = rnd * 2 * M_PI;
+    // double r = 0.8 + rnd * 0.2;
+    // tx = r * cos(phi);
+    // ty = r * sin(phi);
+    // msg_target.data.push_back(tx);
+    // msg_target.data.push_back(ty);
+    // pub_target.publish(msg_target);
 
+    // motor
     eoe     = true ;
 }
 
@@ -99,7 +113,7 @@ void Arm::step( double h, double *force ) {
   // memcpy(msg.data,sensors, msg.data);
   // for (int i = 0; i < 10; i++) {
   // cout << "publishing " << i << endl;
-  motor_pub.publish(msg);
+  pub_motor.publish(msg);
   // cout << "published " << i << endl;
   // ros::spinOnce();
   // cout << "spun " << i << endl;

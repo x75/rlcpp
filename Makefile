@@ -11,7 +11,8 @@ ARMWORLD = Arm.cpp
 ARMINTERFACE = ArmInterface.cpp
 
 LDFLAGS = -L/usr/lib -L/usr/lib/gcc/x86_64-linux-gnu/4.8 -lstdc++
-ROS_LDFLAGS = -L/opt/ros/indigo/lib -lroscpp -lrosconsole -lroscpp_serialization -lroslib -lrostime
+# ROS_LDFLAGS = -L/opt/ros/indigo/lib -lroscpp -lrosconsole -lroscpp_serialization -lroslib -lrostime
+ROS_LDFLAGS = -L/home/src/ros/hydro/catkin_ws/install_isolated/lib -lroscpp -lrosconsole -lroscpp_serialization -lroslib -lrostime
 
 
 # objects := $(patsubst %.cpp,%.o,$(wildcard *.cpp))

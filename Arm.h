@@ -51,11 +51,15 @@ class Arm : public World {
 	// int number_sensors;
 	// int number_motors;
 	bool gotsensor;
-	ros::Publisher motor_pub;
-	ros::Subscriber sensor_sub;
+	ros::Publisher pub_reset;
+	ros::Publisher pub_motor;
+	ros::Subscriber sub_sensor;
+        // ros::Publisher pub_t;
 	// ros::Rate *loop_rate;
 	motor* motorValues;
 	sensor* sensorValues;
+        double tx, ty;
+        //double ty;
 
 };
 
