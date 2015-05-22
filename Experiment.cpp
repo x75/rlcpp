@@ -383,98 +383,98 @@ void Experiment::storeRewards( const char * filepath, double * rewards, int nRew
 
 double * Experiment::runExperiment( World * world ) {
 
-    Action * actions = new Action[2] ; //For Sarsa, that needs both the present and next action.
+  Action * actions = new Action[2] ; //For Sarsa, that needs both the present and next action.
 
-    double reward ;
+  double reward ;
 
-    //* Training *//
-    double * results = new double[ nResults ] ;
+  //* Training *//
+  double * results = new double[ nResults ] ;
 
-    int episode = 0 ;
-    int step = 0 ;
-    int result = 0 ;
-    double rewardSum = 0.0 ;
+  int episode = 0 ;
+  int step = 0 ;
+  int result = 0 ;
+  double rewardSum = 0.0 ;
 
-    world->reset() ;
+  world->reset() ;
 
-    world->getState( state ) ;
+  world->getState( state ) ;
 
-    explore( state, action ) ;
+  explore( state, action ) ;
 
-    endOfEpisode = true ;
+  endOfEpisode = true ;
 
-    int storePer ;
+  int storePer ;
+
+  if ( train ) {
+    storePer = trainStorePer ;
+  } else {
+    storePer = testStorePer ;
+  }
+
+  for ( step = 0 ; (step < nSteps) and (episode < nEpisodes) ; step++ ) {
+
+    if(!ros::ok()) return results;
+    reward = world->act( action ) ;
+
+    world->getState( nextState ) ;
+
+    explore( nextState, nextAction ) ;
+
+    rewardSum += reward ;
+
+    endOfEpisode = world->endOfEpisode() ;
 
     if ( train ) {
-        storePer = trainStorePer ;
-    } else {
-        storePer = testStorePer ;
-    }
 
-    for ( step = 0 ; (step < nSteps) and (episode < nEpisodes) ; step++ ) {
+      if ( algorithmName.compare("Sarsa") == 0 ) {
 
-      if(!ros::ok()) return results;
-        reward = world->act( action ) ;
+	actions[0] = *action ;
+	actions[1] = *nextAction ;
+	algorithm->update( state, actions, reward, nextState, endOfEpisode, learningRate, gamma ) ;
 
-        world->getState( nextState ) ;
+      } else {
 
-        explore( nextState, nextAction ) ;
+	algorithm->update( state, action, reward, nextState, endOfEpisode, learningRate, gamma ) ;
 
-        rewardSum += reward ;
-
-        endOfEpisode = world->endOfEpisode() ;
-
-        if ( train ) {
-
-            if ( algorithmName.compare("Sarsa") == 0 ) {
-
-                actions[0] = *action ;
-                actions[1] = *nextAction ;
-                algorithm->update( state, actions, reward, nextState, endOfEpisode, learningRate, gamma ) ;
-
-            } else {
-
-                algorithm->update( state, action, reward, nextState, endOfEpisode, learningRate, gamma ) ;
-
-            }
-
-        }
-
-        copyState( nextState, state ) ;
-        copyAction( nextAction, action ) ;
-
-        if ( endOfEpisode ) {
-
-            episode++ ;
-
-        }
-
-        // Store results :
-        bool store = false ;
-
-        if ( storePerEpisode and ( episode % storePer == 0 ) and endOfEpisode ) {
-
-            store = true ;
-
-        } else if ( storePerStep and ( (step + 1) % storePer == 0 ) ) {
-
-            store = true ;
-
-        }
-
-        if ( store ) {
-
-            results[ result ] = rewardSum/storePer ;
-            rewardSum = 0.0 ;
-            result++ ;
-
-        }
+      }
 
     }
 
-    delete [] actions ;
+    copyState( nextState, state ) ;
+    copyAction( nextAction, action ) ;
 
-    return results ;
+    if ( endOfEpisode ) {
+
+      episode++ ;
+
+    }
+
+    // Store results :
+    bool store = false ;
+
+    if ( storePerEpisode and ( episode % storePer == 0 ) and endOfEpisode ) {
+
+      store = true ;
+
+    } else if ( storePerStep and ( (step + 1) % storePer == 0 ) ) {
+
+      store = true ;
+
+    }
+
+    if ( store ) {
+
+      results[ result ] = rewardSum/storePer ;
+      rewardSum = 0.0 ;
+      result++ ;
+
+    }
+
+  }
+
+  delete [] actions ;
+
+  return results ;
 
 }
 

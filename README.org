@@ -1,0 +1,9 @@
+Hado van Hasselt's Reinforcement Learning Code
+
+Base is rlcpp.tar.gz [1] via [2].
+
+Added interface to the CACLA implementation via ROS so it can be used on a variety of ROS enabled systems.
+
+* Footnotes
+[1] http://webdocs.cs.ualberta.ca/~vanhasse/rlcpp.tar.gz
+[2] http://webdocs.cs.ualberta.ca/~vanhasse/code.html
