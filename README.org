@@ -1,9 +1,16 @@
-Hado van Hasselt's Reinforcement Learning Code
+#    -*- mode: org -*-
+
+Import of Hado van Hasselt's Reinforcement Learning Code, c++ version
+rlcpp.tar.gz [fn:1]. 
+
+* Additions
+ - Added cmake file to build CartPoleRos and ArmRos
+ - ROS interface to the CACLA implementation so the RL algorithms can
+   be used on a variety of ROS enabled systems.
+
+* Footnotes
+
+[fn:1] http://web.archive.org/web/20131213231018/http://homepages.cwi.nl/~hasselt/code.html
 
 
-* What
-Base is rlcpp.tar.gz (http://webdocs.cs.ualberta.ca/~vanhasse/rlcpp.tar.gz) via http://webdocs.cs.ualberta.ca/~vanhasse/code.html
-
-
-Added interface to the CACLA implementation via ROS so it can be used on a variety of ROS enabled systems.
 
