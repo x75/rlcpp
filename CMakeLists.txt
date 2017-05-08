@@ -6,9 +6,9 @@ project(rlcpp)
 
 link_directories(/opt/ros/jade/lib)
 
-add_library(rlcpp_util StateActionUtils.cpp cNeuralNetwork.cpp Algorithm.cpp StateActionAlgorithm.cpp Experiment.cpp)
+add_library(rlcpp_algorithms SHARED Sarsa.cpp Qlearning.cpp QVlearning.cpp Acla.cpp Cacla.cpp)
 
-add_library(rlcpp_algorithms Sarsa.cpp Qlearning.cpp QVlearning.cpp Acla.cpp Cacla.cpp)
+add_library(rlcpp_util SHARED StateActionUtils.cpp cNeuralNetwork.cpp Algorithm.cpp StateActionAlgorithm.cpp Experiment.cpp)
 
 # this doesn't work as ROS code needs to be included conditionally
 # add_executable(CartPole CartPole.cpp CartPoleInterface.cpp)

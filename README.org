@@ -3,7 +3,14 @@
 Import of Hado van Hasselt's Reinforcement Learning Code, c++ version
 rlcpp.tar.gz [fn:1]. 
 
-* Additions
+To build it do the following, assuming you have ROS Jade installed in
+/opt/ros/jade:
+: mkdir build
+: cmake ..
+: make
+
+Should create CartPoleRos and ArmRos executables in the build directory.
+
  - Added cmake file to build CartPoleRos and ArmRos
  - ROS interface to the CACLA implementation so the RL algorithms can
    be used on a variety of ROS enabled systems.
