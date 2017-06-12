@@ -12,10 +12,10 @@ ARMINTERFACE = ArmInterface.cpp
 
 LDFLAGS = -L/usr/lib -L/usr/lib/gcc/x86_64-linux-gnu/4.8 -lstdc++
 # ROS_DEFS = -DUSE_ROS
-ROS_LDFLAGS = -L/opt/ros/kinetic/lib -lroscpp -lrosconsole -lroscpp_serialization -lroslib -lrostime
+ROS_LDFLAGS = -L/opt/ros/jade/lib -lroscpp -lrosconsole -lroscpp_serialization -lroslib -lrostime
 # ROS_LDFLAGS = -L/home/src/ros/hydro/catkin_ws/install_isolated/lib -lroscpp -lrosconsole -lroscpp_serialization -lroslib -lrostime
-ROS_INCLUDES = -I/opt/ros/kinetic/include
-
+# ROS_LDFLAGS = -L/opt/ros/jade/lib -lroscpp_serialization -lrostime -l:/usr/lib/x86_64-linux-gnu/libboost_date_time.so -l:/usr/lib/x86_64-linux-gnu/libboost_system.so -l:/usr/lib/x86_64-linux-gnu/libboost_thread.so -l:/usr/lib/x86_64-linux-gnu/libpthread.so -lcpp_common -l:/usr/lib/x86_64-linux-gnu/libboost_system.so -l:/usr/lib/x86_64-linux-gnu/libboost_thread.so -l:/usr/lib/x86_64-linux-gnu/libpthread.so -l:/usr/lib/x86_64-linux-gnu/libconsole_bridge.so 
+# ROS_LDFLAGS = -L/opt/ros/jade/lib -lroscpp_serialization -lrostime -l:/usr/lib/x86_64-linux-gnu/libboost_date_time.so -l:/usr/lib/x86_64-linux-gnu/libboost_system.so -l:/usr/lib/x86_64-linux-gnu/libboost_thread.so -l:/usr/lib/x86_64-linux-gnu/libpthread.so -lcpp_common -l:/usr/lib/x86_64-linux-gnu/libboost_system.so -l:/usr/lib/x86_64-linux-gnu/libboost_thread.so -l:/usr/lib/x86_64-linux-gnu/libpthread.so -l:/usr/lib/x86_64-linux-gnu/libconsole_bridge.so 
 
 # objects := $(patsubst %.cpp,%.o,$(wildcard *.cpp))
 objects := $(patsubst %.cpp,%.o,$(UTILFILES))
