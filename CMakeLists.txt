@@ -4,7 +4,7 @@ project(rlcpp)
 
 # find_package(catkin REQUIRED)
 
-link_directories(/opt/ros/jade/lib)
+link_directories(/opt/ros/kinetic/lib)
 
 add_library(rlcpp_algorithms SHARED Sarsa.cpp Qlearning.cpp QVlearning.cpp Acla.cpp Cacla.cpp)
 
