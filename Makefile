@@ -12,8 +12,9 @@ ARMINTERFACE = ArmInterface.cpp
 
 LDFLAGS = -L/usr/lib -L/usr/lib/gcc/x86_64-linux-gnu/4.8 -lstdc++
 # ROS_DEFS = -DUSE_ROS
-ROS_LDFLAGS = -L/opt/ros/indigo/lib -lroscpp -lrosconsole -lroscpp_serialization -lroslib -lrostime
+ROS_LDFLAGS = -L/opt/ros/kinetic/lib -lroscpp -lrosconsole -lroscpp_serialization -lroslib -lrostime
 # ROS_LDFLAGS = -L/home/src/ros/hydro/catkin_ws/install_isolated/lib -lroscpp -lrosconsole -lroscpp_serialization -lroslib -lrostime
+ROS_INCLUDES = -I/opt/ros/kinetic/include
 
 
 # objects := $(patsubst %.cpp,%.o,$(wildcard *.cpp))
@@ -34,9 +35,9 @@ arm_objs_inc += $(patsubst %.cpp,%.h,$(ARMINTERFACE))
 
 all: cp small arm
 
-#		cp
+# cp
 cp:
-	c++ $(CFLAGS) $(UTILFILES) $(ALGORITHMS) $(CPWORLD) $(CPINTERFACE) -o CartPole
+	c++ $(CFLAGS) $(UTILFILES) $(ALGORITHMS) $(CPWORLD) $(CPINTERFACE) $(ROS_INCLUDES) -o CartPole
 	@echo
 	@echo Done compiling CartPole.
 	@echo Run with:    ./CartPole \'cfg\'
@@ -46,14 +47,14 @@ cp:
 cp_objs: $(cp_objs_inc)
 cp_ros: $(objects) $(cp_objs)
 # c++ $(CFLAGS) $(UTILFILES) $(ALGORITHMS) $(CPWORLD) $(CPINTERFACE) -o CartPole
-	g++ $(objects) $(cp_objs) -o CartPoleRos $(LDFLAGS) $(ROS_LDFLAGS)
+	g++ $(objects) $(cp_objs) -o CartPoleRos $(LDFLAGS) $(ROS_LDFLAGS) $(ROS_INCLUDES)
 	@echo
 	@echo Done compiling CartPoleRos.
 	@echo Run with:    ./CartPoleRos \'cfg\'
 	@echo where \'cfg\' is a configuration file.
 	@echo
 
-#		small
+# small
 small:
 	c++ $(CFLAGS) $(UTILFILES) $(ALGORITHMS) $(SMALLWORLD) $(SMALLINTERFACE) -o SmallMaze
 	@echo
@@ -66,7 +67,7 @@ arm_objs: $(arm_objs_inc)
 
 arm: $(objects) $(arm_objs)
 # c++ $(CFLAGS) $(ARM_LDFLAGS) $(UTILFILES) $(ALGORITHMS) $(ARMWORLD) $(ARMINTERFACE) -o Arm
-	g++ $(objects) $(arm_objs) -o Arm $(LDFLAGS) $(ROS_LDFLAGS) 
+	g++ $(objects) $(arm_objs) -o Arm $(LDFLAGS) $(ROS_LDFLAGS) $(ROS_INCLUDES)
 	@echo
 	@echo Done compiling Arm.
 	@echo Run with:    ./Arm \'cfg\'
